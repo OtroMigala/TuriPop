@@ -11,7 +11,6 @@ import java.awt.event.FocusListener;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -23,8 +22,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
 
 public class cls_actualizarAdmin extends JFrame {
+    private JList<String> listaCoordinadores;
     public JPanel panelActuaAdmin;
     private JTextArea areaCedula;
     private JTextField txtNombre;
@@ -43,9 +46,78 @@ public class cls_actualizarAdmin extends JFrame {
 
     private void inciarComponentes() {
         colocarPanelesIglesia();
+        colocarTitulo(); // Método para colocar el título
         ColocarEtiqueta();
         colocarBotones();
         ponertxt();
+        cargarListaCoordinadores();
+
+        JButton botonVolver = new JButton();
+        botonVolver.setBounds(645, 390, 60, 60);
+        botonVolver.setEnabled(true);
+        botonVolver.setForeground(Color.BLUE);
+        botonVolver.setFont(new Font("arial", 1, 15));
+        ImageIcon clicAqui4 = new ImageIcon("volver.png");
+        botonVolver.setIcon(new ImageIcon(clicAqui4.getImage().getScaledInstance(botonVolver.getWidth(), botonVolver.getHeight(), Image.SCALE_SMOOTH)));
+        botonVolver.setBackground(Color.WHITE);
+        panelActuaAdmin.add(botonVolver);
+
+        botonVolver.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                cls_ventanaAdmin vAdmin = new cls_ventanaAdmin();
+                vAdmin.setVisible(true);
+            }
+        });
+
+        botonVolver.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                cls_ventanaAdmin ventanaAdmin = new cls_ventanaAdmin();
+                ventanaAdmin.setVisible(true);
+            }
+        });
+    }
+
+    private void colocarTitulo() {
+        JLabel titulo = new JLabel("Editar Coordinador");
+        titulo.setFont(new Font("Arial", Font.BOLD, 30));
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        titulo.setBounds(200, 10, 345, 37);
+        panelActuaAdmin.add(titulo);
+    }
+
+    private void cargarListaCoordinadores() {
+        DefaultListModel<String> modeloLista = new DefaultListModel<>();
+
+        Connection conexion = cls_db.conectar();
+        if (conexion != null) {
+            try {
+                String consulta = "SELECT nombre, cedula FROM coordinador";
+                PreparedStatement statement = conexion.prepareStatement(consulta);
+                ResultSet resultSet = statement.executeQuery();
+
+                while (resultSet.next()) {
+                    String nombre = resultSet.getString("nombre");
+                    String cedula = resultSet.getString("cedula");
+                    String elemento = nombre + " - " + cedula;
+                    modeloLista.addElement(elemento);
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Error al cargar los coordinadores: " + ex.getMessage());
+            } finally {
+                cls_db.desconectar(conexion);
+            }
+        }
+
+        listaCoordinadores = new JList<>(modeloLista);
+        listaCoordinadores.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+
+        JScrollPane scrollPane = new JScrollPane(listaCoordinadores);
+        scrollPane.setBounds(50, 180, 600, 200);
+        panelActuaAdmin.add(scrollPane);
     }
 
     public void colocarPanelesIglesia() {
@@ -57,9 +129,9 @@ public class cls_actualizarAdmin extends JFrame {
 
     public void ColocarEtiqueta() {
         JLabel etiquetaCedula = new JLabel();
-        etiquetaCedula.setText("Cedula: ");
-        etiquetaCedula.setHorizontalAlignment(SwingConstants.CENTER);
-        etiquetaCedula.setBounds(150, 100, 100, 20);
+        etiquetaCedula.setText("Digite la cedula de un coordinador:");
+        etiquetaCedula.setHorizontalAlignment(SwingConstants.LEFT);
+        etiquetaCedula.setBounds(50, 107, 280, 20);
         etiquetaCedula.setForeground(Color.BLACK);
         etiquetaCedula.setBackground(Color.WHITE);
         etiquetaCedula.setOpaque(true);
@@ -69,7 +141,7 @@ public class cls_actualizarAdmin extends JFrame {
 
     public void colocarBotones() {
         JButton buscarButton = new JButton("Buscar");
-        buscarButton.setBounds(300, 200, 100, 40);
+        buscarButton.setBounds(60, 400, 100, 40);
         buscarButton.setForeground(Color.WHITE);
         buscarButton.setBackground(new Color(59, 89, 182));
         buscarButton.setFont(new Font("Arial", Font.BOLD, 14));
@@ -86,11 +158,11 @@ public class cls_actualizarAdmin extends JFrame {
 
     void ponertxt() {
         areaCedula = new JTextArea();
-        areaCedula.setBounds(300, 100, 200, 40);
+        areaCedula.setBounds(330, 100, 300, 40);
         areaCedula.setForeground(Color.BLACK);
         areaCedula.setBackground(Color.LIGHT_GRAY);
         areaCedula.setText("Escribe aqui la cedula del usuario a Buscar");
-        areaCedula.setFont(new Font("arial", Font.PLAIN, 15));
+        areaCedula.setFont(new Font("arial", Font.PLAIN, 14));
         areaCedula.setLineWrap(true);
         panelActuaAdmin.add(areaCedula);
 
@@ -112,36 +184,38 @@ public class cls_actualizarAdmin extends JFrame {
     }
 
     private void buscarCoordinador() {
-        String cedula = areaCedula.getText().trim();
+        String coordinadorSeleccionado = listaCoordinadores.getSelectedValue();
 
-        if (cedula.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Debe ingresar una cédula válida");
-            return;
-        }
+        if (coordinadorSeleccionado != null) {
+            String[] datos = coordinadorSeleccionado.split(" - ");
+            String cedula = datos[1];
 
-        Connection conexion = cls_db.conectar();
-        if (conexion != null) {
-            try {
-                String consulta = "SELECT nombre, apellido, usuario, password FROM coordinador WHERE cedula = ?";
-                PreparedStatement statement = conexion.prepareStatement(consulta);
-                statement.setString(1, cedula);
+            Connection conexion = cls_db.conectar();
+            if (conexion != null) {
+                try {
+                    String consulta = "SELECT nombre, apellido, usuario, password FROM coordinador WHERE cedula = ?";
+                    PreparedStatement statement = conexion.prepareStatement(consulta);
+                    statement.setString(1, cedula);
 
-                ResultSet resultSet = statement.executeQuery();
-                if (resultSet.next()) {
-                    String nombre = resultSet.getString("nombre");
-                    String apellido = resultSet.getString("apellido");
-                    String usuario = resultSet.getString("usuario");
-                    String password = resultSet.getString("password");
+                    ResultSet resultSet = statement.executeQuery();
+                    if (resultSet.next()) {
+                        String nombre = resultSet.getString("nombre");
+                        String apellido = resultSet.getString("apellido");
+                        String usuario = resultSet.getString("usuario");
+                        String password = resultSet.getString("password");
 
-                    mostrarFormularioActualizacion(cedula, nombre, apellido, usuario, password);
-                } else {
-                    JOptionPane.showMessageDialog(null, "No se encontró ningún coordinador con la cédula ingresada");
+                        mostrarFormularioActualizacion(cedula, nombre, apellido, usuario, password);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "No se encontró ningún coordinador con la cédula seleccionada");
+                    }
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Error al buscar el coordinador: " + ex.getMessage());
+                } finally {
+                    cls_db.desconectar(conexion);
                 }
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Error al buscar el coordinador: " + ex.getMessage());
-            } finally {
-                cls_db.desconectar(conexion);
             }
+        } else {
+            JOptionPane.showMessageDialog(null, "Debe seleccionar un coordinador de la lista");
         }
     }
 
@@ -225,6 +299,24 @@ public class cls_actualizarAdmin extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 actualizarCoordinador(cedula);
+            }
+        });
+        JButton botonVolver = new JButton();
+        botonVolver.setBounds(645, 390, 60, 60);
+        botonVolver.setEnabled(true);
+        botonVolver.setForeground(Color.BLUE);
+        botonVolver.setFont(new Font("arial", 1, 15));
+        ImageIcon clicAqui4 = new ImageIcon("volver.png");
+        botonVolver.setIcon(new ImageIcon(clicAqui4.getImage().getScaledInstance(botonVolver.getWidth(), botonVolver.getHeight(), Image.SCALE_SMOOTH)));
+        botonVolver.setBackground(Color.WHITE);
+        panelActuaAdmin.add(botonVolver);
+
+        botonVolver.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                cls_ventanaAdmin vAdmin = new cls_ventanaAdmin();
+                vAdmin.setVisible(true);
             }
         });
 

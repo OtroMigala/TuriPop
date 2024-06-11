@@ -10,74 +10,91 @@ import java.awt.event.FocusListener;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+import pck_Admin.cls_ventanaAdmin;
 import pck_configuracion.cls_Configuracion;
 import pck_coordinador.cls_coordinador;
+import pck_connection.cls_db;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
 
-public class cls_Login extends JFrame{
-         public JPanel panelLogIn;//se crea un atributo de tipo panel, esto se hizo para independencia de metodos en etiquetas
-        public cls_Login(){
-            this.setSize(730, 500);//se stablece el tamaño de la ventana
-            setDefaultCloseOperation(EXIT_ON_CLOSE);//metodo para poder cerrar proceso de ventana
-            setTitle("TuriPop/LogIn");//titulo de la ventana
-            setLocationRelativeTo(null);//se establece la posicion incial de la ventana en el centro
-            inciarComponentes();
-            setResizable(false); 
+public class cls_Login extends JFrame {
+    private JButton btn_LogIn;
+    private JLabel etiqueta_LogIn;
+    private boolean esLoginAdministrador;
+    public JPanel panelLogIn;
+    private JTextField cajatextoAdmin;
+    private JPasswordField contrasenaField;
+
+    public cls_Login(boolean esLoginAdministrador) {
+        this.esLoginAdministrador = esLoginAdministrador;
+        this.setSize(730, 500);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setTitle("TuriPop/LogIn");
+        setLocationRelativeTo(null);
+        inciarComponentes();
+        setResizable(false);
+    }
+
+    private void inciarComponentes() {
+        colocarPanelesLogIn();
+        colocarEtiquetasLogIn();
+        colocarBotonesLogIn();
+        colocarCajasDeTexto();
+        colocarCajasDePass();
+
+        if (esLoginAdministrador) {
+            btn_LogIn.setVisible(false);
+            etiqueta_LogIn.setVisible(false);
         }
-    private void inciarComponentes(){
-      colocarPanelesLogIn();
-      colocarEtiquetasLogIn();
-      colocarBotonesLogIn();
-      colocarCajasDeTexto();
-      colocarCajasDePass();
     }
 
     private void colocarPanelesLogIn() {
-        panelLogIn = new JPanel();//creacion panel 
-      panelLogIn.setBackground(Color.WHITE);
-      this.getContentPane().add(panelLogIn);//se enlaza con la ventana
-      //creacion de etiqueta
-      panelLogIn.setLayout(null);
+        panelLogIn = new JPanel();
+        panelLogIn.setBackground(Color.WHITE);
+        this.getContentPane().add(panelLogIn);
+        panelLogIn.setLayout(null);
     }
 
     private void colocarEtiquetasLogIn() {
-        //etiqueta boton iniciar sesion
-        JLabel etiqueta = new JLabel();//instancia de etiqueta
-      etiqueta.setText("Iniciar Sesión");//se establece el text de la etiqueta
-      etiqueta.setHorizontalAlignment(SwingConstants.CENTER);//alinear el texto(horizontal) en el margen de la etiqueta en el centro
-      etiqueta.setBounds(200,10,345,37);//donde se va a ubicar
-      etiqueta.setForeground(Color.BLACK);//color de texto
-      etiqueta.setBackground(Color.WHITE);//para el fondo de la etiqueta
-      etiqueta.setOpaque(true);//se requiere de este metodo para poder modificar los parametros de la etiqueta que vienen por default
-      etiqueta.setFont(new Font("arial",1,30));//estabecemos la fuente del txt
-      panelLogIn.add(etiqueta);//agregamos la etiqueta a el panel
-      //etiqueta LOGIN
-      JLabel etiqueta_LogIn = new JLabel();//instancia de etiqueta
-      etiqueta_LogIn.setText("click para ingresar:");//se establece el text de la etiqueta
-      etiqueta_LogIn.setHorizontalAlignment(SwingConstants.CENTER);//alinear el texto(horizontal) en el margen de la etiqueta en el centro
-      etiqueta_LogIn.setBounds(120,288,150,35);//donde se va a ubicar
-      etiqueta_LogIn.setForeground(Color.BLACK);//color de texto
-      etiqueta_LogIn.setBackground(Color.white);//para el fondo de la etiqueta
-      etiqueta_LogIn.setOpaque(true);//se requiere de este metodo para poder modificar los parametros de la etiqueta que vienen por default
-      etiqueta_LogIn.setFont(new Font("arial",1,14));//estabecemos la fuente del txt
-      panelLogIn.add(etiqueta_LogIn);
-      //etiqueta caja usuario
-      JLabel etq_Usuario = new JLabel();//instancia de etiqueta
-      etq_Usuario.setText("Digite su usuario: ");//se establece el text de la etiqueta
-      etq_Usuario.setHorizontalAlignment(SwingConstants.LEFT);//alinear el texto(horizontal) en el margen de la etiqueta en el centro
-      etq_Usuario.setBounds(100,100,140,30);//donde se va a ubicar
-      etq_Usuario.setForeground(Color.BLACK);//color de texto
-      etq_Usuario.setBackground(Color.WHITE);//para el fondo de la etiqueta
-      etq_Usuario.setOpaque(true);//se requiere de este metodo para poder modificar los parametros de la etiqueta que vienen por default
-      etq_Usuario.setFont(new Font("arial",1,15));//estabecemos la fuente del txt
-      panelLogIn.add(etq_Usuario);
-      
-      // Etiqueta para la contraseña
+        etiqueta_LogIn = new JLabel();
+        etiqueta_LogIn.setText("click para ingresar:");
+        etiqueta_LogIn.setHorizontalAlignment(SwingConstants.CENTER);
+        etiqueta_LogIn.setBounds(120, 288, 150, 35);
+        etiqueta_LogIn.setForeground(Color.BLACK);
+        etiqueta_LogIn.setBackground(Color.white);
+        etiqueta_LogIn.setOpaque(true);
+        etiqueta_LogIn.setFont(new Font("arial", 1, 14));
+        panelLogIn.add(etiqueta_LogIn);
+
+        JLabel etiqueta = new JLabel();
+        etiqueta.setText("Iniciar Sesión");
+        etiqueta.setHorizontalAlignment(SwingConstants.CENTER);
+        etiqueta.setBounds(200, 10, 345, 37);
+        etiqueta.setForeground(Color.BLACK);
+        etiqueta.setBackground(Color.WHITE);
+        etiqueta.setOpaque(true);
+        etiqueta.setFont(new Font("arial", 1, 30));
+        panelLogIn.add(etiqueta);
+
+        JLabel etq_Usuario = new JLabel();
+        etq_Usuario.setText("Digite su usuario: ");
+        etq_Usuario.setHorizontalAlignment(SwingConstants.LEFT);
+        etq_Usuario.setBounds(100, 100, 140, 30);
+        etq_Usuario.setForeground(Color.BLACK);
+        etq_Usuario.setBackground(Color.WHITE);
+        etq_Usuario.setOpaque(true);
+        etq_Usuario.setFont(new Font("arial", 1, 15));
+        panelLogIn.add(etq_Usuario);
+
         JLabel etiqueta_Contrasena = new JLabel();
         etiqueta_Contrasena.setText("Digite su contraseña:");
         etiqueta_Contrasena.setHorizontalAlignment(SwingConstants.LEFT);
@@ -85,72 +102,100 @@ public class cls_Login extends JFrame{
         etiqueta_Contrasena.setForeground(Color.BLACK);
         etiqueta_Contrasena.setFont(new Font("arial", 1, 14));
         panelLogIn.add(etiqueta_Contrasena);
-        // Etiqueta para imagen inicio sesion admin
+
         ImageIcon imagenLogIn = new ImageIcon("LogIn.png");
-      JLabel label_imagenLogIn=new JLabel();
-      label_imagenLogIn.setBounds(320,70,246,246);//parametros de la etiqueta
-      //setIcon permite concatenar el ancho de la etiqueta al ancho de la imagen
-      label_imagenLogIn.setIcon(new ImageIcon(imagenLogIn.getImage().getScaledInstance(label_imagenLogIn.getWidth(),//recoge el ancho
-              label_imagenLogIn.getHeight(),//recoge el alto
-              Image.SCALE_SMOOTH)));//pone el tipo de imagen en smooth
-      panelLogIn.add(label_imagenLogIn);
-      label_imagenLogIn.setBounds(440,70,256,256);//editar aqui
+        JLabel label_imagenLogIn = new JLabel();
+        label_imagenLogIn.setBounds(320, 70, 246, 246);
+        label_imagenLogIn.setIcon(new ImageIcon(imagenLogIn.getImage().getScaledInstance(label_imagenLogIn.getWidth(), label_imagenLogIn.getHeight(), Image.SCALE_SMOOTH)));
+        panelLogIn.add(label_imagenLogIn);
+        label_imagenLogIn.setBounds(440, 70, 256, 256);
     }
 
     private void colocarBotonesLogIn() {
-        //botton con imagen:
-        JButton btn_LogIn = new JButton();
-        btn_LogIn.setBounds(300,270,80,80);
-        btn_LogIn.setEnabled(true);//habilita la interaccion con el boton
-        btn_LogIn.setForeground(Color.BLUE);//color letra
-        btn_LogIn.setFont(new Font("arial",1, 15));//establecemos la funte del texto
         ImageIcon clicAqui = new ImageIcon("acceso.png");
-        btn_LogIn.setIcon(new ImageIcon(clicAqui.getImage().getScaledInstance(btn_LogIn.getWidth(), btn_LogIn.getHeight(), Image.SCALE_SMOOTH)));
-        btn_LogIn.setBackground(Color.WHITE);//color de fondo del boton
-        panelLogIn.add(btn_LogIn);
-        btn_LogIn.requestFocusInWindow();//enfoca al boton en vez de señalar el textfield
+
+    btn_LogIn = new JButton();
+    btn_LogIn.setBounds(300, 270, 80, 80);
+    btn_LogIn.setEnabled(true);
+    btn_LogIn.setForeground(Color.BLUE);
+    btn_LogIn.setFont(new Font("arial", 1, 15));
+    btn_LogIn.setIcon(new ImageIcon(clicAqui.getImage().getScaledInstance(btn_LogIn.getWidth(), btn_LogIn.getHeight(), Image.SCALE_SMOOTH)));
+    btn_LogIn.setBackground(Color.WHITE);
+    panelLogIn.add(btn_LogIn);
+    btn_LogIn.requestFocusInWindow();
+
+    JButton btn_LogInAdmin = new JButton();
+
+    if (esLoginAdministrador) {
+        btn_LogInAdmin.setBounds(300, 270, 80, 80);
+        btn_LogInAdmin.setEnabled(true);
+        btn_LogInAdmin.setForeground(Color.BLUE);
+        btn_LogInAdmin.setFont(new Font("arial", 1, 15));
+        btn_LogInAdmin.setIcon(new ImageIcon(clicAqui.getImage().getScaledInstance(btn_LogInAdmin.getWidth(), btn_LogInAdmin.getHeight(), Image.SCALE_SMOOTH)));
+        btn_LogInAdmin.setBackground(Color.WHITE);
+        panelLogIn.add(btn_LogInAdmin);
+
+        btn_LogInAdmin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                String usuario = cajatextoAdmin.getText();
+                String contrasena = new String(contrasenaField.getPassword());
+
+                if (validarAdministrador(usuario, contrasena)) {
+                    cls_ventanaAdmin ventanaAdmin = new cls_ventanaAdmin();
+                    ventanaAdmin.setVisible(true);
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos", "Error de autenticación", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+    }
+
         ActionListener accionUser = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                        cls_coordinador ventanaCoordi =new cls_coordinador();
-                        ventanaCoordi.setVisible(true);
-                        dispose();//cierra la ventana anterior
+                String usuario = cajatextoAdmin.getText();
+                String contrasena = new String(contrasenaField.getPassword());
+                
+                if (validarUsuario(usuario, contrasena)) {
+                    dispose(); // Cierra la ventana de login
+                    cls_coordinador ventanaCoordi = new cls_coordinador();
+                    ventanaCoordi.setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos", "Error de autenticación", JOptionPane.ERROR_MESSAGE);
+                }
             }
         };
         btn_LogIn.addActionListener(accionUser);
-    
-        //BOTON VOLVER
+
         JButton botonVolver = new JButton();
-        //boton1.setText("Agregar");//agregar txt al boton
-        botonVolver.setBounds(645,390,60,60);
-        botonVolver.setEnabled(true);//habilita la interaccion con el boton
-        botonVolver.setMnemonic('d');//establecemos que la interaccion del boton sea alt + "letra añadida"
-        botonVolver.setForeground(Color.BLUE);//color letra
-        botonVolver.setFont(new Font("arial",1, 15));//establecemos la funte del texto
+        botonVolver.setBounds(645, 390, 60, 60);
+        botonVolver.setEnabled(true);
+        botonVolver.setMnemonic('d');
+        botonVolver.setForeground(Color.BLUE);
+        botonVolver.setFont(new Font("arial", 1, 15));
         ImageIcon clicAqui4 = new ImageIcon("volver.png");
         botonVolver.setIcon(new ImageIcon(clicAqui4.getImage().getScaledInstance(botonVolver.getWidth(), botonVolver.getHeight(), Image.SCALE_SMOOTH)));
-        botonVolver.setBackground(Color.WHITE);//color de fondo del boton
+        botonVolver.setBackground(Color.WHITE);
         panelLogIn.add(botonVolver);
         botonVolver.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Cerrar la ventana actual
                 dispose();
-                cls_Configuracion v1 = new cls_Configuracion(); 
+                cls_Configuracion v1 = new cls_Configuracion();
                 v1.setVisible(true);
-                // Aquí podrías realizar otras acciones, como mostrar la ventana anterior
             }
         });
-        panelLogIn.add(botonVolver);
     }
+
     private void colocarCajasDeTexto() {
-        JTextField cajatextoAdmin = new JTextField();
+        cajatextoAdmin = new JTextField();
         cajatextoAdmin.setBounds(250, 100, 140, 28);
         cajatextoAdmin.setText("Escribe aquí tu usuario");
         panelLogIn.add(cajatextoAdmin);
-        cajatextoAdmin.setFont(new Font("arial",1,12));
-        //System.out.println("txt en la caja:"+cajatextoAdmin.getText());
-        // Agregar FocusListener para borrar el texto cuando se selecciona la caja de texto
+        cajatextoAdmin.setFont(new Font("arial", 1, 12));
+
         cajatextoAdmin.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -166,28 +211,82 @@ public class cls_Login extends JFrame{
                 }
             }
         });
-        
     }
-     private void colocarCajasDePass() {
-        // Caja de texto para la contraseña
-        JPasswordField contrasenaField = new JPasswordField();
+
+    private void colocarCajasDePass() {
+        contrasenaField = new JPasswordField();
         contrasenaField.setBounds(250, 150, 140, 28);
         panelLogIn.add(contrasenaField);
         contrasenaField.setFont(new Font("arial", 1, 12));
-        contrasenaField.addFocusListener(new FocusListener() {
-        @Override
-        public void focusGained(FocusEvent e) {
-            // No hacer nada al ganar el foco
-        }
 
-        @Override
-        public void focusLost(FocusEvent e) {
-            // Verificar si el texto actual es igual al texto predeterminado
-            if (String.valueOf(contrasenaField.getPassword()).equals("Digite su contraseña:")) {
-                // Limpiar el campo de contraseña
-                contrasenaField.setText("");
+        contrasenaField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                // No hacer nada al ganar el foco
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (String.valueOf(contrasenaField.getPassword()).equals("Digite su contraseña:")) {
+                    contrasenaField.setText("");
+                }
+            }
+        });
+    }
+
+    private boolean validarUsuario(String usuario, String contrasena) {
+        boolean usuarioValido = false;
+
+        Connection conexion = cls_db.conectar();
+        if (conexion != null) {
+            try {
+                String consulta = "SELECT COUNT(*) FROM coordinador WHERE usuario = ? AND password = ?";
+                PreparedStatement statement = conexion.prepareStatement(consulta);
+                statement.setString(1, usuario);
+                statement.setString(2, contrasena);
+
+                ResultSet resultSet = statement.executeQuery();
+                if (resultSet.next()) {
+                    int count = resultSet.getInt(1);
+                    usuarioValido = count > 0;
+                }
+
+                statement.close();
+            } catch (SQLException e) {
+                System.out.println("Error al validar el usuario: " + e.getMessage());
+            } finally {
+                cls_db.desconectar(conexion);
             }
         }
-    });
-   }
+
+        return usuarioValido;
+    }
+
+    private boolean validarAdministrador(String usuario, String contrasena) {
+        boolean administradorValido = false;
+
+        Connection conexion = cls_db.conectar();
+        if (conexion != null) {
+            try {
+                String consulta = "SELECT COUNT(*) FROM ADMINISTRADOR WHERE USUARIO = ? AND PASSWORD = ?";
+                PreparedStatement statement = conexion.prepareStatement(consulta);
+                statement.setString(1, usuario);
+                statement.setString(2, contrasena);
+
+                ResultSet resultSet = statement.executeQuery();
+                if (resultSet.next()) {
+                    int count = resultSet.getInt(1);
+                    administradorValido = count > 0;
+                }
+
+                statement.close();
+            } catch (SQLException e) {
+                System.out.println("Error al validar el administrador: " + e.getMessage());
+            } finally {
+                cls_db.desconectar(conexion);
+            }
+        }
+
+        return administradorValido;
+    }
 }

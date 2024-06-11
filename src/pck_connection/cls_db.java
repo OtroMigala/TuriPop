@@ -5,11 +5,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class  cls_db{
+
+
+public class cls_db {
     private static final String URL = "jdbc:oracle:thin:@localhost:1521:xe";
     private static final String USUARIO = "TURIPOP";
     private static final String CONTRASENA = "turipop"; // Ingresa la contraseña correspondiente
 
+    /**
+     * Establece una conexión a la base de datos.
+     * @return La conexión establecida.
+     */
     public static Connection conectar() {
         Connection conexion = null;
         try {
@@ -21,6 +27,10 @@ public class  cls_db{
         return conexion;
     }
 
+    /**
+     * Cierra la conexión a la base de datos.
+     * @param conexion La conexión a cerrar.
+     */
     public static void desconectar(Connection conexion) {
         try {
             if (conexion != null && !conexion.isClosed()) {

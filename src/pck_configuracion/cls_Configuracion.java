@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
+//import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -115,6 +115,28 @@ public class cls_Configuracion extends JFrame{
         botonVolver.setIcon(new ImageIcon(clicAqui4.getImage().getScaledInstance(botonVolver.getWidth(), botonVolver.getHeight(), Image.SCALE_SMOOTH)));
         botonVolver.setBackground(Color.WHITE);//color de fondo del boton
         panelConfiguracion.add(botonVolver);
+
+        //btnAdmin:
+
+       // JButton boton5 = new JButton();
+        boton3.setBounds(170, 300, 110, 110);
+        boton3.setEnabled(true);
+        ImageIcon clicAqui5 = new ImageIcon("administrador.png");
+        boton3.setIcon(new ImageIcon(clicAqui5.getImage().getScaledInstance(boton3.getWidth(), boton3.getHeight(), Image.SCALE_SMOOTH)));
+        boton3.setBackground(Color.WHITE);
+        panelConfiguracion.add(boton3);
+        //accionbotonadmin
+
+        boton3.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent ae) {
+              cls_Login ventanaLoginAdmin = new cls_Login(true); // Pasamos 'true' para indicar que es el login de administrador
+              ventanaLoginAdmin.setVisible(true);
+              dispose();
+          }
+      });
+        
+
         //accion boton volver
         botonVolver.addActionListener(new ActionListener() {
             @Override
@@ -125,13 +147,13 @@ public class cls_Configuracion extends JFrame{
             }
         });
         ActionListener accionUser = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                        cls_Login ventanaLogIn =new cls_Login();
-                        ventanaLogIn.setVisible(true);
-                        dispose();//cierra la ventana anterior
-            }
-        };
+          @Override
+          public void actionPerformed(ActionEvent ae) {
+              dispose(); // Cierra la ventana actual de cls_Configuracion
+              cls_Login ventanaLogIn = new cls_Login(false);
+              ventanaLogIn.setVisible(true);
+          }
+      };
         boton2.addActionListener(accionUser);
         ActionListener accionAdminLogeo = new ActionListener() {
             @Override
@@ -142,5 +164,10 @@ public class cls_Configuracion extends JFrame{
             }
         };
         boton3.addActionListener(accionAdminLogeo);
+
+
     }
+
+    
+    
 }

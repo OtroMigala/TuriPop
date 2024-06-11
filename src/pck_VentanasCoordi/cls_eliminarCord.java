@@ -2,93 +2,211 @@ package pck_VentanasCoordi;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import pck_coordinador.cls_coordinador;
 
-public class cls_eliminarCord extends JFrame{
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import pck_connection.cls_db;
+
+public class cls_eliminarCord extends JFrame {
+
+    private JList<String> listSitiosTuristicos;
+    private DefaultListModel<String> listModel;
     public JPanel panelElimCoord;
-    public cls_eliminarCord(){
-            this.setSize(730, 500);//se stablece el tamaño de la ventana
-            setDefaultCloseOperation(EXIT_ON_CLOSE);//metodo para poder cerrar proceso de ventana
-            setTitle("TuriPop/Eliminar Sitio Turistico");//titulo de la ventana
-            setLocationRelativeTo(null);//se establece la posicion incial de la ventana en el centro
-            inciarComponentes();
-            setResizable(false); 
-            panelElimCoord.setLayout(new GridLayout(2, 1));
-        }
-    private void inciarComponentes(){
-     colocarPanelesElemCoord(); 
-     ColocarEtiqueta();
-     colocarBotones();
+    private JTextField txtBusqueda;
+
+    public cls_eliminarCord() {
+        this.setSize(730, 500);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setTitle("TuriPop/Eliminar Sitio Turistico");
+        setLocationRelativeTo(null);
+        inciarComponentes();
+        cargarSitiosTuristicos();
+        setResizable(false);
     }
-    public void colocarPanelesElemCoord(){
-        panelElimCoord = new JPanel();//creacion panel 
-      panelElimCoord.setBackground(Color.WHITE);
-      this.getContentPane().add(panelElimCoord);//se enlaza con la ventana
-      //creacion de etiqueta
-      panelElimCoord.setLayout(null);
+
+    private void inciarComponentes() {
+        colocarPanelesElemCoord();
+        colocarEtiqueta();
+        colocarCampoBusqueda();
+        colocarBotones();
     }
-    
-    public void ColocarEtiqueta(){
-        JLabel etiqueta = new JLabel();//instancia de etiqueta
-      etiqueta.setText("Eliminar S.T");//se establece el text de la etiqueta
-      etiqueta.setHorizontalAlignment(SwingConstants.CENTER);//alinear el texto(horizontal) en el margen de la etiqueta en el centro
-      etiqueta.setBounds(200,10,345,37);//donde se va a ubicar
-      etiqueta.setForeground(Color.BLACK);//color de texto
-      etiqueta.setBackground(Color.WHITE);//para el fondo de la etiqueta
-      etiqueta.setOpaque(true);//se requiere de este metodo para poder modificar los parametros de la etiqueta que vienen por default
-      etiqueta.setFont(new Font("arial",1,30));//estabecemos la fuente del txt
-      panelElimCoord.add(etiqueta);
+
+    public void colocarPanelesElemCoord() {
+        panelElimCoord = new JPanel();
+        panelElimCoord.setBackground(Color.WHITE);
+        this.getContentPane().add(panelElimCoord);
+        panelElimCoord.setLayout(null);
+
+        listModel = new DefaultListModel<>();
+        listSitiosTuristicos = new JList<>(listModel);
+        JScrollPane scrollPane = new JScrollPane(listSitiosTuristicos);
+        scrollPane.setBounds(50, 120, 600, 200);
+        panelElimCoord.add(scrollPane);
     }
-    
-    public void colocarBotones(){
-        //btn borrar sitio
-        JButton btnEliminar = new JButton("Eliminar Sitio");
+
+    public void colocarEtiqueta() {
+        JLabel etiqueta = new JLabel();
+        etiqueta.setText("Eliminar Sitio Turístico");
+        etiqueta.setHorizontalAlignment(SwingConstants.CENTER);
+        etiqueta.setBounds(200, 20, 345, 37);
+        etiqueta.setForeground(Color.BLACK);
+        etiqueta.setBackground(Color.WHITE);
+        etiqueta.setOpaque(true);
+        etiqueta.setFont(new Font("arial", Font.BOLD, 24));
+        panelElimCoord.add(etiqueta);
+    }
+
+    public void colocarCampoBusqueda() {
+        JLabel lblBusqueda = new JLabel("Buscar:");
+        lblBusqueda.setBounds(50, 80, 100, 25);
+        lblBusqueda.setFont(new Font("arial", Font.PLAIN, 16));
+        panelElimCoord.add(lblBusqueda);
+
+        txtBusqueda = new JTextField();
+        txtBusqueda.setBounds(150, 80, 400, 25);
+        txtBusqueda.setFont(new Font("arial", Font.PLAIN, 16));
+        panelElimCoord.add(txtBusqueda);
+
+        txtBusqueda.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                buscarSitiosTuristicos();
+            }
+        });
+    }
+
+    public void colocarBotones() {
+        JButton btnEliminar = new JButton("Eliminar");
+        btnEliminar.setBounds(50, 350, 100, 30);
+        btnEliminar.setFont(new Font("arial", Font.PLAIN, 14));
         btnEliminar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int option = JOptionPane.showConfirmDialog(null, "¿Estás seguro de que deseas eliminar este sitio turístico?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
-                if (option == JOptionPane.YES_OPTION) {
-                    // Aquí iría el código para eliminar el sitio turístico
-                    JOptionPane.showMessageDialog(null, "Sitio turístico eliminado exitosamente.");
+                String sitioSeleccionado = listSitiosTuristicos.getSelectedValue();
+                if (sitioSeleccionado != null) {
+                    int option = JOptionPane.showConfirmDialog(null, "¿Estás seguro de que deseas eliminar este sitio turístico?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+                    if (option == JOptionPane.YES_OPTION) {
+                        eliminarSitioTuristico(sitioSeleccionado);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Selecciona un sitio turístico para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-
-        panelElimCoord.add(new JLabel("Aquí iría la lista de sitios turísticos a elegir para eliminar."));
         panelElimCoord.add(btnEliminar);
 
-        add(panelElimCoord);
-        //
         JButton botonVolver = new JButton();
-        botonVolver.setBounds(645,390,60,60);
-        botonVolver.setEnabled(true);//habilita la interaccion con el boton
-        botonVolver.setForeground(Color.BLUE);//color letra
-        botonVolver.setFont(new Font("arial",1, 15));//establecemos la funte del texto
+        botonVolver.setBounds(645, 410, 60, 60);
+        botonVolver.setEnabled(true);
+        botonVolver.setForeground(Color.BLUE);
+        botonVolver.setFont(new Font("arial", Font.BOLD, 15));
         ImageIcon clicAqui4 = new ImageIcon("volver.png");
         botonVolver.setIcon(new ImageIcon(clicAqui4.getImage().getScaledInstance(botonVolver.getWidth(), botonVolver.getHeight(), Image.SCALE_SMOOTH)));
-        botonVolver.setBackground(Color.WHITE);//color de fondo del boton
+        botonVolver.setBackground(Color.WHITE);
         panelElimCoord.add(botonVolver);
-        //accion boton volver
+
         botonVolver.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
-                cls_coordinador vElimiCoord = new cls_coordinador(); 
+                cls_coordinador vElimiCoord = new cls_coordinador();
                 vElimiCoord.setVisible(true);
             }
         });
+    }
+
+    private void cargarSitiosTuristicos() {
+        listModel.clear();
+
+        Connection conexion = cls_db.conectar();
+        if (conexion != null) {
+            try {
+                String consulta = "SELECT NOMBRE FROM SITIO_TURISTICO";
+                PreparedStatement statement = conexion.prepareStatement(consulta);
+                ResultSet resultSet = statement.executeQuery();
+
+                while (resultSet.next()) {
+                    String nombreSitio = resultSet.getString("NOMBRE");
+                    listModel.addElement(nombreSitio);
+                }
+
+                statement.close();
+            } catch (SQLException e) {
+                System.out.println("Error al obtener los sitios turísticos desde la base de datos: " + e.getMessage());
+            } finally {
+                cls_db.desconectar(conexion);
+            }
+        }
+    }
+
+    private void buscarSitiosTuristicos() {
+        String textoBusqueda = txtBusqueda.getText().toLowerCase();
+        listModel.clear();
+
+        Connection conexion = cls_db.conectar();
+        if (conexion != null) {
+            try {
+                String consulta = "SELECT NOMBRE FROM SITIO_TURISTICO WHERE LOWER(NOMBRE) LIKE ?";
+                PreparedStatement statement = conexion.prepareStatement(consulta);
+                statement.setString(1, "%" + textoBusqueda + "%");
+                ResultSet resultSet = statement.executeQuery();
+
+                while (resultSet.next()) {
+                    String nombreSitio = resultSet.getString("NOMBRE");
+                    listModel.addElement(nombreSitio);
+                }
+
+                statement.close();
+            } catch (SQLException e) {
+                System.out.println("Error al buscar sitios turísticos: " + e.getMessage());
+            } finally {
+                cls_db.desconectar(conexion);
+            }
+        }
+    }
+
+    private void eliminarSitioTuristico(String nombreSitio) {
+        Connection conexion = cls_db.conectar();
+        if (conexion != null) {
+            try {
+                String consulta = "DELETE FROM SITIO_TURISTICO WHERE NOMBRE = ?";
+                PreparedStatement statement = conexion.prepareStatement(consulta);
+                statement.setString(1, nombreSitio);
+
+                int filasAfectadas = statement.executeUpdate();
+                if (filasAfectadas > 0) {
+                    JOptionPane.showMessageDialog(null, "Sitio turístico eliminado exitosamente.");
+                    cargarSitiosTuristicos();
+                } else {
+                    JOptionPane.showMessageDialog(null, "No se pudo eliminar el sitio turístico.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+                statement.close();
+            } catch (SQLException e) {
+                System.out.println("Error al eliminar el sitio turístico: " + e.getMessage());
+            } finally {
+                cls_db.desconectar(conexion);
+            }
+        }
     }
 }

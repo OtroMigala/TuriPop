@@ -10,7 +10,7 @@ import java.awt.event.FocusListener;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
+//import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -300,7 +300,7 @@ public class cls_registrarAdmin extends JFrame{
     
         // Validar que la cédula sea un número entero válido
         try {
-            int cedulaNumero = Integer.parseInt(cedula);
+            //int cedulaNumero = Integer.parseInt(cedula);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "La cédula debe ser un número entero válido");
             return;
